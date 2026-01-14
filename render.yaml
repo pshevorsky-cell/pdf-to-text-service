@@ -1,12 +1,12 @@
 services:
   - type: web
-    name: pdf-to-text
-    runtime: python
+    name: pdf-to-text-service-1
     env: python
-    region: oregon
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
     envVars:
-      - key: PORT
-        value: 10000
+      - key: TELEGRAM_BOT_TOKEN
+        value: {{ TELEGRAM_BOT_TOKEN }}
+      - key: GROQ_API_KEY
+        value: {{ GROQ_API_KEY }}
+    region: oregon
