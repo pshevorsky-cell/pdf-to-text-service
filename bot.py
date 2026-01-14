@@ -27,10 +27,14 @@ client = Groq(api_key=GROQ_API_KEY)
 PROMPT = """You are a logistics expert. Your ONLY task is to extract data and output EXACTLY the format below. Follow these rules strictly:
 
 1. Output ONLY the sections shown below — nothing before, nothing after.
-2. NEVER include extra text like "Rate Agreement", "Company", "Driver Name", "File #", "Commodity", "Fuel Surcharge", "Special Instructions", "Signature", or any footer.
-3. NEVER add explanations, notes, or markdown.
-4. For [Address Type], write "RESIDENTIAL" only if the word "RESIDENTIAL" appears in the delivery address. Otherwise, write "COMMERCIAL".
-5. If a field is missing, leave it blank (e.g., MILES: ).
+2. NEVER include extra text like "Rate Agreement", "Company", "Driver Name", "File #", etc.
+3. For [Address Type], write "RESIDENTIAL" only if the word "RESIDENTIAL" appears in the delivery address. Otherwise, write "COMMERCIAL".
+4. For MILES:
+   - If the PDF explicitly states miles (e.g., "Miles: 2,559"), use that number.
+   - If not, estimate the distance between pickup and delivery cities based on common U.S. geography (e.g., "New York to Los Angeles ≈ 2,800 miles").
+   - If you cannot estimate, leave it blank: "MILES: ".
+5. Keep weight, pieces, and rate exactly as written in the PDF.
+6. NEVER add explanations, notes, or markdown.
 
 Format:
 
