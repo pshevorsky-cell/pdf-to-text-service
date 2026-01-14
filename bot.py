@@ -24,7 +24,15 @@ if not TELEGRAM_BOT_TOKEN or not GROQ_API_KEY:
 client = Groq(api_key=GROQ_API_KEY)
 
 # === PROMPT — строго по вашему шаблону ===
-PROMPT = """You are a logistics expert. Output ONLY the following format — no extra text, no explanations, no prefixes.
+PROMPT = """You are a logistics expert. Your ONLY task is to extract data and output EXACTLY the format below. Follow these rules strictly:
+
+1. Output ONLY the sections shown below — nothing before, nothing after.
+2. NEVER include extra text like "Rate Agreement", "Company", "Driver Name", "File #", "Commodity", "Fuel Surcharge", "Special Instructions", "Signature", or any footer.
+3. NEVER add explanations, notes, or markdown.
+4. For [Address Type], write "RESIDENTIAL" only if the word "RESIDENTIAL" appears in the delivery address. Otherwise, write "COMMERCIAL".
+5. If a field is missing, leave it blank (e.g., MILES: ).
+
+Format:
 
 PICK UP
 
@@ -48,8 +56,9 @@ TOTAL RATE: [total rate]
 
 🌎Our 24/7 tracking team will support you on this shipment and may request your current location when required by the broker. Please make sure to stay in touch with them at all times. For any questions or issues during the route, loading, or unloading, please contact us directly via messages. Permanent phone number: (484) 339-3955.
 
-🙏And if you feel satisfied with our service, you are always welcome to add a tip by simply writing, for example: “TIPS $25”. It’s never expected but always greatly appreciated — and it goes directly to your dispatcher."""
+🙏And if you feel satisfied with our service, you are always welcome to add a tip by simply writing, for example: “TIPS $25”. It’s never expected but always greatly appreciated — and it goes directly to your dispatcher.
 
+Now process the PDF text below. Output ONLY the formatted result — nothing else."""
 # === Функции обработки ===
 async def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     pdf_file = io.BytesIO(pdf_bytes)
