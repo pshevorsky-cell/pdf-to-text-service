@@ -6,21 +6,24 @@ from telegram.ext import Application, MessageHandler, filters, ContextTypes
 import PyPDF2
 from groq import Groq
 
-# Загрузка переменных окружения из Render Secrets
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
-if not TELEGRAM_BOT_TOKEN or not GROQ_API_KEY:
-    raise ValueError("Укажите TELEGRAM_BOT_TOKEN и GROQ_API_KEY в Render Secrets")
-
+# === Настройка логирования ===
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
+# === Загрузка секретов из Render ===
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if not TELEGRAM_BOT_TOKEN or not GROQ_API_KEY:
+    raise ValueError("Укажите TELEGRAM_BOT_TOKEN и GROQ_API_KEY в Render Environment Variables")
+
+# === Инициализация Groq ===
 client = Groq(api_key=GROQ_API_KEY)
 
+# === PROMPT — строго по вашему шаблону ===
 PROMPT = """You are a logistics expert. Output ONLY the following format — no extra text, no explanations, no prefixes.
 
 PICK UP
@@ -47,6 +50,7 @@ TOTAL RATE: [total rate]
 
 🙏And if you feel satisfied with our service, you are always welcome to add a tip by simply writing, for example: “TIPS $25”. It’s never expected but always greatly appreciated — and it goes directly to your dispatcher."""
 
+# === Функции обработки ===
 async def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     pdf_file = io.BytesIO(pdf_bytes)
     reader = PyPDF2.PdfReader(pdf_file)
@@ -58,13 +62,17 @@ async def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     return text.strip()
 
 async def parse_with_ai(text: str) -> str:
-    chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": PROMPT + "\n\nText from PDF:\n" + text}],
-        model="llama-3.1-8b-instant",
-        temperature=0.0,
-        max_tokens=1000,
-    )
-    return chat_completion.choices[0].message.content.strip()
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[{"role": "user", "content": PROMPT + "\n\nText from PDF:\n" + text}],
+            model="llama-3.1-8b-instant",
+            temperature=0.0,
+            max_tokens=1000,
+        )
+        return chat_completion.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"Groq error: {e}")
+        raise
 
 async def handle_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -86,21 +94,28 @@ async def handle_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(load_info)
 
     except Exception as e:
-        logger.exception("Ошибка")
+        logger.exception("Ошибка при обработке PDF")
         await update.message.reply_text("Не удалось обработать PDF.")
 
+# === Запуск бота с вебхуком ===
 def main():
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(MessageHandler(filters.Document.MimeType("application/pdf"), handle_pdf))
-    app.add_handler(MessageHandler(filters.ALL, lambda u, c: u.message.reply_text("Отправьте PDF.")))
+    app.add_handler(MessageHandler(filters.ALL, lambda u, c: u.message.reply_text("Отправьте PDF с Rate Confirmation.")))
 
-    # Render использует PORT из окружения
+    # Получаем URL из Render (он выглядит как: https://your-service.onrender.com)
+    RENDER_SERVICE_NAME = os.getenv("RENDER_SERVICE_NAME", "pdf-to-text-service-1")
+    WEBHOOK_URL = f"https://{RENDER_SERVICE_NAME}.onrender.com"
+
     port = int(os.environ.get("PORT", 10000))
+    webhook_path = f"/{TELEGRAM_BOT_TOKEN}"
+
+    logger.info(f"Setting webhook: {WEBHOOK_URL}{webhook_path}")
     app.run_webhook(
         listen="0.0.0.0",
         port=port,
         url_path=TELEGRAM_BOT_TOKEN,
-        webhook_url=f"https://{os.getenv('RENDER_EXTERNAL_URL')}/{TELEGRAM_BOT_TOKEN}"
+        webhook_url=f"{WEBHOOK_URL}{webhook_path}"
     )
 
 if __name__ == "__main__":
