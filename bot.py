@@ -46,13 +46,13 @@ PICK UP
 
 [Pickup Date and Time]
 
-[Pickup Address Lines and company name]
+[company name for pickup and Pickup Address Lines]
 
 DELIVERY
 
 [Delivery Date and Time]
 
-[Delivery Address Lines and receiver's company name]
+[delivery company name and Delivery Address Lines]
 [Address Type]
 
 WEIGHT: [weight]
