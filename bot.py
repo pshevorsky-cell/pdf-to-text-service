@@ -26,15 +26,18 @@ client = Groq(api_key=GROQ_API_KEY)
 # === PROMPT — строго по вашему шаблону ===
 PROMPT = """You are a logistics expert. Your ONLY task is to extract data and output EXACTLY the format below. Follow these rules strictly:
 
-1. Output ONLY the sections shown below — nothing before, nothing after.
-2. NEVER include extra text like "Rate Agreement", "Company", "Driver Name", "File #", etc.
-3. For [Address Type], write "RESIDENTIAL" only if the word "RESIDENTIAL" appears in the delivery address. Otherwise, write "COMMERCIAL".
-4. For MILES:
-   - If the PDF explicitly states miles (e.g., "Miles: 2,559"), use that number.
-   - If not, estimate the distance between pickup and delivery cities based on common U.S. geography (e.g., "New York to Los Angeles ≈ 2,800 miles").
-   - If you cannot estimate, leave it blank: "MILES: ".
-5. Keep weight, pieces, and rate exactly as written in the PDF.
-6. NEVER add explanations, notes, or markdown.
+1. Output ONLY the sections shown — nothing before, nothing after.
+2. NEVER duplicate any information. Use each piece of data only once.
+3. Extract Pickup Address from the line starting with "Pick-Up-A".
+4. Extract Delivery Address from the line starting with "Deliver-A". Ignore all other mentions of addresses (e.g., "Bill To", "Carrier", etc.).
+5. For [Recipient Name]: use the company name that appears immediately after "Deliver-A" (e.g., "FE EXPRESS LLC"). If no name is present, leave it blank.
+6. For [Address Type]: write "RESIDENTIAL" only if the word "RESIDENTIAL" appears in the delivery address. Otherwise, write "COMMERCIAL".
+7. For MILES:
+   - If the PDF explicitly states miles (e.g., "Miles: 721"), use that number.
+   - If not, estimate based on U.S. geography.
+   - If impossible, leave blank: "MILES: ".
+8. Keep weight, pieces, and rate exactly as written.
+9. NEVER add explanations, notes, markdown, or extra fields.
 
 Format:
 
@@ -47,8 +50,9 @@ PICK UP
 DELIVERY
 
 [Delivery Date and Time]
-
+[Recipient Name]
 [Delivery Address Lines]
+[Address Type]
 
 WEIGHT: [weight]
 PIECES: [pieces]
@@ -59,9 +63,7 @@ TOTAL RATE: [total rate]
 
 🌎Our 24/7 tracking team will support you on this shipment and may request your current location when required by the broker. Please make sure to stay in touch with them at all times. For any questions or issues during the route, loading, or unloading, please contact us directly via messages. Permanent phone number: (484) 339-3955.
 
-🙏And if you feel satisfied with our service, you are always welcome to add a tip by simply writing, for example: “TIPS $25”. It’s never expected but always greatly appreciated — and it goes directly to your dispatcher.
-
-Now process the PDF text below. Output ONLY the formatted result — nothing else."""
+🙏And if you feel satisfied with our service, you are always welcome to add a tip by simply writing, for example: “TIPS $25”. It’s never expected but always greatly appreciated — and it goes directly to your dispatcher."""
 # === Функции обработки ===
 async def extract_text_from_pdf(pdf_bytes: bytes) -> str:
     pdf_file = io.BytesIO(pdf_bytes)
