@@ -46,10 +46,10 @@ PICK UP
 
 DELIVERY
 
-[Delivery Date]
+[Delivery Date and Time]
+
 [Recipient Name]
 [Delivery Address Lines]
-[Address Type]
 
 WEIGHT: [weight]
 PIECES: [pieces]
