@@ -37,7 +37,8 @@ PROMPT = """You are a logistics expert. Your ONLY task is to extract data and ou
    - If not, estimate based on U.S. geography.
    - If impossible, leave blank: "MILES: ".
 8. Keep weight, pieces, and rate exactly as written.
-9. NEVER add explanations, notes, markdown, or extra fields.
+9. NEVER add explanations, notes, markdown, or extra fields
+10. Add a blank line AFTER the pickup date and time.
 
 Format:
 
@@ -45,7 +46,7 @@ PICK UP
 
 [Pickup Date and Time]
 
-[Pickup Address Lines and shipper's company name]
+[Pickup Address Lines and company name]
 
 DELIVERY
 
