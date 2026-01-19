@@ -48,7 +48,6 @@ DELIVERY
 
 [Delivery Date and Time]
 
-[Recipient Name]
 [Delivery Address Lines]
 
 WEIGHT: [weight]
