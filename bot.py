@@ -38,7 +38,7 @@ PROMPT = """You are a logistics expert. Your ONLY task is to extract data and ou
    - If impossible, leave blank: "MILES: ".
 8. Keep weight, pieces, and rate exactly as written.
 9. NEVER add explanations, notes, markdown, or extra fields
-10. Add a blank line AFTER the pickup date and time.
+10. Add an empty blank line AFTER the pickup date and time.
 
 Format:
 
