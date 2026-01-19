@@ -53,7 +53,6 @@ DELIVERY
 [Delivery Date and Time]
 
 [delivery company name and Delivery Address Lines]
-[Address Type]
 
 WEIGHT: [weight]
 PIECES: [pieces]
